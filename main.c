@@ -2,7 +2,7 @@
  * Project3.c
  *
  * Created: 5/11/2018 10:06:07 AM
- * Author : Vicky Adebona
+ * Author : Vicky Adebona and Nelly F. Dzul Chi
  */ 
 
 #include <avr/io.h>
@@ -21,7 +21,7 @@
 #define W 1000
 #define H 500
 #define Q 250
-#define E 125
+//#define E 125
 
 struct note {
 	int f; 
@@ -29,28 +29,29 @@ struct note {
 };
 
 
-const struct note SONG[] = {{C, Q}, {C,Q}, {G, Q}, {G, Q}, {A2, Q}, {A2, Q}, {G, H}, {F, Q}, {F, Q}, {E, Q}, {E, Q}, {D, Q}, {D,Q}, {C, H}};
+struct note SONG[14] = {{C, Q}, {C,Q}, {G, Q}, {G, Q}, {A2, Q}, {A2, Q}, {G, H}, {F, Q}, {F, Q}, {E, Q}, {E, Q}, {D, Q}, {D,Q}, {C, H}};
 
-void playNote(int freq, int dest)
+void playNote(int freq, int dur)
 {
-	int k, i, t;
+	int i, k, t;
+	k = dur * freq;
+	t = (((1/freq)/2)*5000000);
 	
 	for (i = 0; i < k; ++i) {
 		SET_BIT(PORTB, 0); // Writes 1 to PORTB
-		wait_avr(1000);
+		wait_avr(t);	//1000);
 		
 		CLR_BIT(PORTB, 0); // Writes 0 to PORTB
-		wait_avr(1000);
-		
+		wait_avr(t);	//1000);
 	}	
 }
 
-void playMusic(const struct note S)
+void playMusic(struct note *S)
 {
 	int i;
-	for (i = 0; i < sizeof(S) ; ++i)
+	for (i = 0; i < sizeof(S); ++i)
 	{
-		playNote(SONG[i].f, SONG[i].d);
+		playNote(S[i].f, S[i].d);
 	}	
 }
 
