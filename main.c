@@ -29,11 +29,16 @@ struct note {
 };
 
 
-struct note SONG[14] = {{C, Q}, {C,Q}, {G, Q}, {G, Q}, {A2, Q}, {A2, Q}, {G, H}, {F, Q}, {F, Q}, {E, Q}, {E, Q}, {D, Q}, {D,Q}, {C, H}};
+/* Twinkle, Twinkle Little Star */
+struct note SONG[] = {{C, Q}, {C,Q}, {G, Q}, {G, Q}, {A2, Q}, {A2, Q}, {G, H}, {F, Q}, {F, Q}, {E, Q}, {E, Q}, {D, Q}, {D,Q}, {C, H},
+						{G, Q}, {G, Q}, {F, Q}, {F, Q}, {E, Q}, {E, Q}, {D, H}, 
+						{G, Q}, {G, Q}, {F, Q}, {F, Q}, {E, Q}, {E, Q}, {D, H},
+						{C, Q}, {C,Q}, {G, Q}, {G, Q}, {A2, Q}, {A2, Q}, {G, H}, {F, Q}, {F, Q}, {E, Q}, {E, Q}, {D, Q}, {D,Q}, {C, H}};
 
 void playNote(int freq, int dur)
 {
-	int i, k, t;
+	int i, k;
+	float t;
 	k = dur * freq;
 	t = (((1/freq)/2)*5000000);
 	
@@ -57,6 +62,7 @@ void playMusic(struct note *S)
 
 int main(void) {
 	// Sets PB0 to output:
+	ini_avr();
 	DDRB = 1;
 	clr_lcd();
 	
