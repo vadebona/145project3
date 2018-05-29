@@ -1,8 +1,8 @@
 /*
- * Project3.c
+ * Project4.c
  *
- * Created: 5/11/2018 10:06:07 AM
- * Author : Vicky Adebona and Nelly F. Dzul Chi
+ * Created: 5/29/2018 12:28:57 PM
+ * Author : Nelly Dzul
  */ 
 
 #include <avr/io.h>
@@ -10,70 +10,111 @@
 #include "avr.c"
 #include "lcd.c"
 
-#define A1 440
-#define C 523
-#define D 587
-#define E 659
-#define F 698
-#define G 784
-#define A2 880
 
-#define W 1000
-#define H 500
-#define Q 250
-//#define E 125
-
-struct note {
-	int f; 
-	int d;
+struct State
+{
+	float min;
+	float max;
+	float current;
+	//avg = sum/count
+	float count;
+	float sum; 	
 };
 
-
-/* Twinkle, Twinkle Little Star */
-struct note SONG[] = {{C, Q}, {C,Q}, {G, Q}, {G, Q}, {A2, Q}, {A2, Q}, {G, H}, {F, Q}, {F, Q}, {E, Q}, {E, Q}, {D, Q}, {D,Q}, {C, H},
-						{G, Q}, {G, Q}, {F, Q}, {F, Q}, {E, Q}, {E, Q}, {D, H}, 
-						{G, Q}, {G, Q}, {F, Q}, {F, Q}, {E, Q}, {E, Q}, {D, H},
-						{C, Q}, {C,Q}, {G, Q}, {G, Q}, {A2, Q}, {A2, Q}, {G, H}, {F, Q}, {F, Q}, {E, Q}, {E, Q}, {D, Q}, {D,Q}, {C, H}};
-
-void playNote(int freq, int dur)
-{
-	int i, k;
-	float t;
-	k = dur * freq;
-	t = (((1/freq)/2)*5000000);
+struct State stats = {0, 0, 0, 0, 0};
 	
-	for (i = 0; i < k; ++i) {
-		SET_BIT(PORTB, 0); // Writes 1 to PORTB
-		wait_avr(t);	//1000);
-		
-		CLR_BIT(PORTB, 0); // Writes 0 to PORTB
-		wait_avr(t);	//1000);
-	}	
-}
-
-void playMusic(struct note *S)
+void update(float s)
 {
-	int i;
-	for (i = 0; i < sizeof(S); ++i)
-	{
-		playNote(S[i].f, S[i].d);
-	}	
+	if (s <= stats.min){
+		stats.min = s;
+	}
+	
+	if (s >= stats.max){
+		stats.max = s;
+	}
+	
+	stats.current = s;	
+	stats.count += 1;
+	stats.sum += s;
 }
 
-int main(void) {
-	// Sets PB0 to output:
+
+void display()
+{
+	char buf[10];
+	char buf2[10];
+	
+	sprintf(buf, "%f   %f", stats.current, stats.max);
+	sprintf(buf2, "%f  %f". stats.min, (stats.sum/stats.count));
+	
+}
+
+float get_a2c()
+{
+	
+	
+}
+
+int is_pressed(int r, int c) {
+	// Set all R's and all C's to N/C
+	DDRC = 0;
+	PORTC = 0;
+	
+	// Set r to Strong 0
+	SET_BIT(DDRC, r);
+	CLR_BIT(PORTC, r);
+	
+	// Set c to Weak 1
+	CLR_BIT(DDRC, c+4); // Add 4 to reach pins 4-7 on keypad
+	SET_BIT(PORTC, c+4);
+	wait_avr(1);
+	
+	// Change state of button
+	if(GET_BIT(PINC, c+4)) {
+		return 0; // button is not pressed
+		} else {
+		return 1; // button is pressed
+	}
+}
+
+
+int get_key() {
+	int r, c;
+	
+	for(r = 0; r < 4; ++r) {
+		for(c = 0; c < 4; ++c) {
+			if(is_pressed(r, c)) {
+				return r * 4 + c + 1;
+			}
+		}
+	}
+	return 0;
+}
+
+int main(void)
+{
 	ini_avr();
-	DDRB = 1;
+	ini_lcd();
 	clr_lcd();
 	
-	playMusic(SONG);
-/*	while (1) {
-		SET_BIT(PORTB, 0); // Writes 1 to PORTB
-		wait_avr(1000);
+	float s;
+	int k;
+	int on = 0;
+    while (1) 
+    {
+		k = get_key();	//check user input
+		if (k == 1) { //start
+			on = 1;
+		} else if (k == 2) { //reset
+			stats = {0, 0, 0, 0, 0};
+		}
 		
-		CLR_BIT(PORTB, 0); // Writes 0 to PORTB
-		wait_avr(1000);
+		if (on == 1){
+			wait_avr(500);
+			s = get_a2c();
+			update(s); //display(); //stats is a global 
+		}
 		
-	}*/
-} 
+		display();
+}
 
