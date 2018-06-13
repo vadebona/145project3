@@ -2,12 +2,12 @@
  * Project5.c
  *
  * Created: 6/6/2018 7:04:49 PM
- * Author : Nelly Dzul
+ * Author : Nelly Dzul & Victoria Adebona
  */ 
 
 #include <avr/io.h>
-#include "avr.c" 
-#include "lcd.c"
+#include "avr.h" 
+#include "lcd.h"
 #include <stdio.h>
 
 #define Gb4	370
@@ -42,16 +42,6 @@ struct note {
 	int d;
 };
 
-
-struct note sunshine[81] = {
-	{A4, Q}, {Db5, Q}, {E, Q}, {E, Q}, {E, H}, {E, Q}, {E, Q}, {Gb5, Q}, {A5, H}, {Db5, Q}, {B4, Q}, {A4, Q}, {Gb4, Q}, {B4, H}, {A4, W},
-	{A4, Q}, {Db5, Q}, {E, Q}, {E, Q}, {E, H}, {E, Q}, {E, Q}, {Gb5, Q}, {A5, H}, {Db5, Q}, {B4, Q}, {A4, Q}, {Gb4, Q}, {B4, H}, {A4, W},
-	{A4, Q}, {Db5, Q}, {E, Q}, {E, Q}, {E, H}, {E, Q}, {E, Q}, {Gb5, Q}, {Gb5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, W}, {E, W},
-	{Gb5, Q}, {A5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, Q}, {Db5, Q}, {Gb5, H}, {E, H}, {Db5, Q}, {B4, Q}, {A4, Q}, {Gb4, Q}, {B4, Q}, {A4, W}, {A4, W},
-	{Gb5, Q}, {A5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, W}, {B5, H}, {A5, W},
-	{Gb5, Q}, {A5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, W}, {B5, H}, {A5, W}, {Gb5, Q}, {A5, Q}, {Gb5, Q}, {A5, Q}, {Db6, W}
-};
-
 struct Clock {
 	unsigned int month;
 	unsigned int day;
@@ -63,6 +53,16 @@ struct Clock {
 
 	unsigned int flag;				//for hour, if it is AM then
 };
+
+struct note sunshine[81] = {
+	{A4, Q}, {Db5, Q}, {E, Q}, {E, Q}, {E, H}, {E, Q}, {E, Q}, {Gb5, Q}, {A5, H}, {Db5, Q}, {B4, Q}, {A4, Q}, {Gb4, Q}, {B4, H}, {A4, W},
+	{A4, Q}, {Db5, Q}, {E, Q}, {E, Q}, {E, H}, {E, Q}, {E, Q}, {Gb5, Q}, {A5, H}, {Db5, Q}, {B4, Q}, {A4, Q}, {Gb4, Q}, {B4, H}, {A4, W},
+	{A4, Q}, {Db5, Q}, {E, Q}, {E, Q}, {E, H}, {E, Q}, {E, Q}, {Gb5, Q}, {Gb5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, W}, {E, W},
+	{Gb5, Q}, {A5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, Q}, {Db5, Q}, {Gb5, H}, {E, H}, {Db5, Q}, {B4, Q}, {A4, Q}, {Gb4, Q}, {B4, Q}, {A4, W}, {A4, W},
+	{Gb5, Q}, {A5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, W}, {B5, H}, {A5, W},
+	{Gb5, Q}, {A5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, W}, {B5, H}, {A5, W}, {Gb5, Q}, {A5, Q}, {Gb5, Q}, {A5, Q}, {Db6, W}
+};
+
 
  //struct Clock c = {1, 1, 0, 0, 0, 0, 0};//flag 0 = AM, 1 = PM
  //struct Clock alarm = {1, 1, 0, 0, 0, 0, 0};
@@ -280,6 +280,42 @@ struct Clock set_flag(struct Clock clock) //does it just change it
 	}
 	return clock ;
 }
+
+void playNote(int freq, int dur)
+{
+	int i, k;
+	float t;
+	k = dur * freq;
+	
+	float period = 1/freq;
+	float h = period/2;
+	t = h*500000;
+	t = (unsigned short)t;
+	
+	for (i = 0; i < k; ++i) {
+		SET_BIT(PORTB, 0); // Writes 1 to PORTB
+		wait_sound(t);	//1000);
+		
+		CLR_BIT(PORTB, 0); // Writes 0 to PORTB
+		wait_sound(t);	//1000);
+	}
+}
+
+void playMusic(struct note *S)
+{
+	int i;
+	for (i = 0; i < sizeof(S); ++i)
+	{
+		playNote(S[i].f, S[i].d);
+	}
+}
+
+
+int check_alarm(struct Clock clock, struct Clock alarm) {
+	if ((clock.hour == alarm.hour) && (clock.minute == alarm.minute) && (clock.second == alarm.second) && (clock.flag == alarm.flag)) {
+		return 1;
+	} else { return 0; }
+}
 /*
 void display()
 {
@@ -334,13 +370,17 @@ int main()
 			//displayAlarm = 0;
 			char hhmmssAlarm[9];
 			alarm = set_flag(alarm);
-			char amPm;
+			char amPm, al;
 			if (alarm.flag == 0) {
 				amPm = 'A';
 			} else {
 				amPm = 'P';
+			} if (alarmOn) {
+				al = 'O';
+			} else {
+				al = 'F';
 			}
-			sprintf(hhmmssAlarm, "%02i:%02i:%02i %c", get_hour(alarm), alarm.minute, alarm.second, amPm);
+			sprintf(hhmmssAlarm, "%02i:%02i:%02i %c %c", get_hour(alarm), alarm.minute, alarm.second, amPm, al);
 			pos_lcd(0,0);
 			puts_lcd2(hhmmssAlarm);
 		}
@@ -367,7 +407,13 @@ int main()
 			}
 		}
 		////////////////alarm
-
+		if(alarmOn) {
+			int alarmSound = check_alarm(c, alarm); // determines if the current time matches the alarm that has just been set
+			if (alarmSound == 1) {
+				playMusic(sunshine);
+			}
+		}
+		
 		wait_avr(1000);
 		c = run_clock(c); //advance time/update clock
 	}
