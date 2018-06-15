@@ -3,19 +3,14 @@
  *
 
  * Created: 6/6/2018 7:04:49 PM
-
  * Author : Nelly Dzul & Victoria Adebona
-
- */ 
+ */
 
 
 
 #include <avr/io.h>
-
-#include "avr.c" 
-
-#include "lcd.c"
-
+#include "avr.h"
+#include "lcd.h"
 #include <stdio.h>
 
 
@@ -79,8 +74,6 @@ struct note {
 	int d;
 };
 
-
-
 struct Clock {
 
 	unsigned int month;
@@ -89,7 +82,7 @@ struct Clock {
 
 	unsigned int year;
 
-	
+
 
 	unsigned int hour;
 
@@ -103,28 +96,22 @@ struct Clock {
 
 };
 
-
-
-struct note sunshine[82] = {
-
-	{A4, Q}, {Db5, Q}, {E, Q}, {E, Q}, {E, H}, {E, Q}, {E, Q}, {Gb5, Q}, {A5, H}, {Db5, Q}, {B4, Q}, {A4, Q}, {Gb4, Q}, {B4, H}, {A4, W}, //15
-
-	{A4, Q}, {Db5, Q}, {E, Q}, {E, Q}, {E, H}, {E, Q}, {E, Q}, {Gb5, Q}, {A5, H}, {Db5, Q}, {B4, Q}, {A4, Q}, {Gb4, Q}, {B4, H}, {A4, W}, //15
-
-	{A4, Q}, {Db5, Q}, {E, Q}, {E, Q}, {E, H}, {E, Q}, {E, Q}, {Gb5, Q}, {Gb5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, W}, {E, W},			//14
-
-	{Gb5, Q}, {A5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, Q}, {Db5, Q}, {Gb5, H}, {E, H}, {Db5, Q}, {B4, Q}, {A4, Q}, {Gb4, Q}, {B4, Q}, {A4, W}, {A4, W}, //16
-
-	{Gb5, Q}, {A5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, W}, {B5, H}, {A5, W},	//8
-
-	{Gb5, Q}, {A5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, W}, {B5, H}, {A5, W}, {Gb5, Q}, {A5, Q}, {Gb5, Q}, {A5, Q}, {Db6, W} //14
-
+struct note sunshine[81] = {
+	{A4, Q}, {Db5, Q}, {E, Q}, {E, Q}, {E, H}, {E, Q}, {E, Q}, {Gb5, Q}, {A5, H}, {Db5, Q}, {B4, Q}, {A4, Q}, {Gb4, Q}, {B4, H}, {A4, W},
+	{A4, Q}, {Db5, Q}, {E, Q}, {E, Q}, {E, H}, {E, Q}, {E, Q}, {Gb5, Q}, {A5, H}, {Db5, Q}, {B4, Q}, {A4, Q}, {Gb4, Q}, {B4, H}, {A4, W},
+	{A4, Q}, {Db5, Q}, {E, Q}, {E, Q}, {E, H}, {E, Q}, {E, Q}, {Gb5, Q}, {Gb5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, W}, {E, W},
+	{Gb5, Q}, {A5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, Q}, {Db5, Q}, {Gb5, H}, {E, H}, {Db5, Q}, {B4, Q}, {A4, Q}, {Gb4, Q}, {B4, Q}, {A4, W}, {A4, W},
+	{Gb5, Q}, {A5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, W}, {B5, H}, {A5, W},
+	{Gb5, Q}, {A5, Q}, {Gb5, Q}, {Db5, Q}, {Gb5, H}, {E, W}, {B5, H}, {A5, W}, {Gb5, Q}, {A5, Q}, {Gb5, Q}, {A5, Q}, {Db6, W}
 };
 
 
+ //struct Clock c = {1, 1, 0, 0, 0, 0, 0};//flag 0 = AM, 1 = PM
+ //struct Clock alarm = {1, 1, 0, 0, 0, 0, 0};
+
 int months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}; // stores how many days are in each month in an array
 char mmddyyyy[11] = {'0','1','/','0','1','/','0','0','0','0','\0'};
-char hhmmss[9] = {'0','0',':','0','0',':','0','0','\0'}; 
+char hhmmss[9] = {'0','0',':','0','0',':','0','0','\0'};
 int setAlarm = 0;
 int alarmOn = 0;
 int displayAlarm = 0;
@@ -138,7 +125,7 @@ int is_pressed(int r, int c) {
 
 	PORTC = 0;
 
-	
+
 
 	// Set r to Strong 0
 
@@ -146,7 +133,7 @@ int is_pressed(int r, int c) {
 
 	CLR_BIT(PORTC, r);
 
-	
+
 
 	// Set c to Weak 1
 
@@ -156,7 +143,7 @@ int is_pressed(int r, int c) {
 
 	wait_avr(1);
 
-	
+
 
 	// Change state of button
 
@@ -178,7 +165,7 @@ int get_key() {
 
 	int r, c;
 
-	
+
 
 	for(r = 0; r < 4; ++r) {
 
@@ -305,7 +292,7 @@ struct Clock set_struct(struct Clock cl, int k)
 
 		}
 
-		
+
 
 		if (cl.day > months[cl.month-1]){
 
@@ -445,7 +432,7 @@ struct Clock run_clock(struct Clock c)
 
 				c.day += 1;
 
-				
+
 
 				int days_in_month = months[c.month-1];
 
@@ -513,7 +500,7 @@ int get_hour(struct Clock clock)
 
 
 
-struct Clock set_flag(struct Clock clock) //does it just change it 
+struct Clock set_flag(struct Clock clock) //does it just change it
 
 {
 
@@ -554,7 +541,7 @@ int playNote(int freq, int dur)
 	for (i = 0; i < k; ++i) {
 		SET_BIT(PORTB, 0); // Writes 1 to PORTB
 		wait_sound(t);	//1000);
-		
+
 		CLR_BIT(PORTB, 0); // Writes 0 to PORTB
 		wait_sound(t);	//1000);
 	}
@@ -661,8 +648,7 @@ int main()
 				amPm = 'A';
 			} else {
 				amPm = 'P';
-			} 
-			if (alarmOn) {
+			} if (alarmOn) {
 				al = 'O';
 			} else {
 				al = 'F';
@@ -706,7 +692,7 @@ int main()
 						time = 0;
 					}
 					c = display(c);
-				}	
+				}
 			}
 		}
 		wait_avr(1000);
